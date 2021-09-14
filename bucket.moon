@@ -27,6 +27,12 @@ class Bucket
 		@Value += Amount
 		@Value < @Limit
 
+	try: (Amount = 1) =>
+		if @canFill Amount
+			@fill Amount
+			true
+		else false
+
 	canFill: updater (Amount = 1) =>
 		@Value + Amount <= @Limit, @Limit - (@Value + Amount)
 
