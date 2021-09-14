@@ -39,3 +39,7 @@ class Bucket
 	reset: (To = 0) =>
 		@Value = To
 		@Last = 0
+
+	drain: updater (Amount = 1) =>
+		@Value = math.max 0, @Value - Amount
+		@Value
