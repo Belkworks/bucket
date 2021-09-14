@@ -21,17 +21,31 @@ do
       local Delta = Now - self.Last
       self.Value = math.max(0, self.Value - Delta * self.Drain)
       self.Last = Now
-      return self.Value
+      return self.Value, self.Limit - self.Value
     end,
     fill = updater(function(self, Amount)
+      if Amount == nil then
+        Amount = 1
+      end
       self.Value = self.Value + Amount
       return self.Value < self.Limit
     end),
+    try = function(self, Amount)
+      if Amount == nil then
+        Amount = 1
+      end
+      if self:canFill(Amount) then
+        self:fill(Amount)
+        return true
+      else
+        return false
+      end
+    end,
     canFill = updater(function(self, Amount)
       if Amount == nil then
         Amount = 1
       end
-      return self.Value + Amount <= self.Limit
+      return self.Value + Amount <= self.Limit, self.Limit - (self.Value + Amount)
     end),
     reset = function(self, To)
       if To == nil then
@@ -39,7 +53,14 @@ do
       end
       self.Value = To
       self.Last = 0
-    end
+    end,
+    drain = updater(function(self, Amount)
+      if Amount == nil then
+        Amount = 1
+      end
+      self.Value = math.max(0, self.Value - Amount)
+      return self.Value
+    end)
   }
   _base_0.__index = _base_0
   _class_0 = setmetatable({
