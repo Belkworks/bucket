@@ -21,7 +21,7 @@ class Bucket
 		Delta = Now - @Last
 		@Value = math.max 0, @Value - Delta*@Drain
 		@Last = Now
-		@Value
+		@Value, @Limit - @Value
 
 	fill: updater (Amount) =>
 		@Value += Amount
