@@ -23,7 +23,7 @@ class Bucket
 		@Last = Now
 		@Value, @Limit - @Value
 
-	fill: updater (Amount) =>
+	fill: updater (Amount = 1) =>
 		@Value += Amount
 		@Value < @Limit
 
