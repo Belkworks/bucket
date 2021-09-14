@@ -28,7 +28,7 @@ class Bucket
 		@Value < @Limit
 
 	canFill: updater (Amount = 1) =>
-		@Value + Amount <= @Limit
+		@Value + Amount <= @Limit, @Limit - (@Value + Amount)
 
 	reset: (To = 0) =>
 		@Value = To
