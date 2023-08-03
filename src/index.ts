@@ -1,3 +1,6 @@
+// Bucket
+// safazi 2023
+
 const zero = (num: number) => math.max(0, num);
 
 export class Bucket {
@@ -12,21 +15,24 @@ export class Bucket {
 		/** Initial value of the bucket, defaults to `0` */
 		value = 0,
 	) {
-		assert(drainRate >= 0, "bucket drainPerSecond must be >=0");
-		assert(limit > 0, "bucket limit must be greater than 0");
+		if (drainRate < 0) throw "bucket drainPerSecond must be >=0";
+		if (limit <= 0) throw "bucket limit must be greater than 0";
 		this.value = zero(value);
+	}
+
+	private markDelta() {
+		const now = tick(); // Use os.clock() instead?
+		const delta = zero(now - this.lastUpdate);
+		this.lastUpdate = now;
+		return delta;
 	}
 
 	/** Get the current value of the bucket */
 	get() {
-		const now = tick(); // Use os.clock() instead?
-		const delta = zero(now - this.lastUpdate);
-		const drain = delta * this.drainRate;
-		const value = this.value;
-		if (drain === 0) return value;
+		const drain = this.drainRate * this.markDelta();
+		if (drain === 0) return this.value;
 
-		this.value = zero(value - drain);
-		this.lastUpdate = now;
+		this.value = zero(this.value - drain);
 		return this.value;
 	}
 
@@ -54,28 +60,27 @@ export class Bucket {
 		return this.get() === 0;
 	}
 
-	/** Check if the `amount` can fit in the bucket */
+	/** Check if the `amount` can fit in the bucket, negative values are ignored */
 	canFill(amount = 1) {
-		// TODO: assert amount > 0?
-		return this.get() + amount <= this.limit;
+		return this.get() + zero(amount) <= this.limit;
 	}
 
 	/** Attempt to fill the bucket with `amount`, returns success */
 	tryFill(amount = 1) {
 		if (!this.canFill(amount)) return false;
-		this.fill(amount);
+		this.value += amount; // canFill already updated the value
 		return true;
 	}
 
 	/** Attempt to fill the bucket with `amount`, throw otherwise */
 	fillOrKill(amount = 1) {
-		if (!this.tryFill(amount)) throw `cannot fill ${amount} into bucket with limit ${this.limit})`;
-		return this;
+		if (this.tryFill(amount)) return this;
+		throw `cannot fill ${amount} into bucket with limit ${this.limit})`;
 	}
 
 	/** Drain the bucket by `amount` */
 	drain(amount = 1) {
-		return (this.value = math.max(0, this.get() - amount));
+		this.set(this.get() - amount);
 	}
 
 	/** Calculate the time (in seconds) to drain `amount` */
@@ -84,7 +89,7 @@ export class Bucket {
 	}
 
 	/** Calculate the time (in seconds) until `amount` will fit in the bucket */
-	timeUntilFillable(amount = 1) {
+	timeUntilCanFill(amount = 1) {
 		return this.timeToDrain(this.get() + amount - this.limit);
 	}
 
