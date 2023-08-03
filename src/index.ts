@@ -1,18 +1,20 @@
 const zero = (num: number) => math.max(0, num);
 
 export class Bucket {
-	private lastUpdate = 0;
+	private lastUpdate = tick();
+	private value: number;
 
 	constructor(
 		/** Limit of the bucket */
 		private readonly limit: number,
-		/** Amount drained per second, defaults to `1` */
+		/** Amount drained per second, defaults to `1`, must be >=0 */
 		private readonly drainRate = 1,
 		/** Initial value of the bucket, defaults to `0` */
-		private value = 0,
+		value = 0,
 	) {
-		assert(drainRate >= 0, "bucket drainPerSecond cannot be negative");
+		assert(drainRate >= 0, "bucket drainPerSecond must be >=0");
 		assert(limit > 0, "bucket limit must be greater than 0");
+		this.value = zero(value);
 	}
 
 	/** Get the current value of the bucket */
@@ -30,21 +32,26 @@ export class Bucket {
 
 	/** Add `amount` to the bucket, negative values are ignored */
 	fill(amount = 1) {
-		this.value = this.get() + zero(amount);
+		if (amount <= 0) return this;
+		this.value = this.get() + amount;
 		return this;
 	}
 
-	/** Set the amount in the bucket  */
+	/** Set the amount in the bucket, negative values are replaced with 0 */
 	set(to: number) {
-		// TODO: assert to > 0? zero?
-		this.value = to;
+		this.value = zero(to);
 		this.lastUpdate = tick();
 		return this;
 	}
 
 	/** Empty the bucket */
-	reset() {
+	empty() {
 		return this.set(0);
+	}
+
+	/** Check if the bucket is empty */
+	isEmpty() {
+		return this.get() === 0;
 	}
 
 	/** Check if the `amount` can fit in the bucket */
@@ -53,7 +60,7 @@ export class Bucket {
 		return this.get() + amount <= this.limit;
 	}
 
-	/** Attempt to fill the bucket with `amount` */
+	/** Attempt to fill the bucket with `amount`, returns success */
 	tryFill(amount = 1) {
 		if (!this.canFill(amount)) return false;
 		this.fill(amount);
@@ -89,5 +96,10 @@ export class Bucket {
 	/** Calculate the time (in seconds) until the bucket is empty */
 	timeUntilEmpty() {
 		return this.timeUntilValueIs(0);
+	}
+
+	/** Calculate the drainRate to drain `amount` in `seconds` */
+	static calculateRate(amount: number, seconds: number) {
+		return amount / seconds;
 	}
 }
