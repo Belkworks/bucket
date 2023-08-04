@@ -2,6 +2,10 @@
 
 _A leaky bucket class for rate limiting._
 
+## Documentation
+
+https://belkworks.github.io/bucket
+
 ## Example
 
 ### Typescript

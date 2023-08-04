@@ -3,5 +3,8 @@
 	"out": "docs",
 	"gitRevision": "master",
 	"readme": "none",
-	"excludePrivate": true
+	"excludePrivate": true,
+	"navigationLinks": {
+		"GitHub": "https://github.com/Belkworks/bucket"
+	}
 }
