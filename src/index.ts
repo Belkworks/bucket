@@ -10,8 +10,10 @@ export function calculateRate(amount: number, seconds: number) {
 	return amount / seconds;
 }
 
+const TIME_SOURCE = tick; // TODO: Use os.clock() instead?
+
 export class Bucket {
-	private lastUpdate = tick();
+	private lastUpdate = TIME_SOURCE();
 	private value: number;
 
 	constructor(
@@ -28,7 +30,7 @@ export class Bucket {
 	}
 
 	private markDelta() {
-		const now = tick(); // Use os.clock() instead?
+		const now = TIME_SOURCE();
 		const delta = zero(now - this.lastUpdate);
 		this.lastUpdate = now;
 		return delta;
@@ -53,7 +55,7 @@ export class Bucket {
 	/** Set the amount in the bucket */
 	set(to: number) {
 		this.value = zero(to);
-		this.lastUpdate = tick();
+		this.lastUpdate = TIME_SOURCE();
 		return this;
 	}
 
