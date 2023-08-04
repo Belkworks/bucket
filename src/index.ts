@@ -1,16 +1,23 @@
 // Bucket
 // safazi 2023
 
-const zero = (num: number) => math.max(0, num);
+function zero(num: number) {
+	return math.max(0, num);
+}
+
+/** Calculate the `drainRate` to drain `amount` in `seconds` */
+export function calculateRate(amount: number, seconds: number) {
+	return amount / seconds;
+}
 
 export class Bucket {
 	private lastUpdate = tick();
 	private value: number;
 
 	constructor(
-		/** Limit of the bucket */
+		/** Limit of the bucket, must be `> 0` */
 		private readonly limit: number,
-		/** Amount drained per second, defaults to `1`, must be >=0 */
+		/** Amount drained per second, defaults to `1`, must be `>= 0` */
 		private readonly drainRate = 1,
 		/** Initial value of the bucket, defaults to `0` */
 		value = 0,
@@ -43,7 +50,7 @@ export class Bucket {
 		return this;
 	}
 
-	/** Set the amount in the bucket, negative values are replaced with 0 */
+	/** Set the amount in the bucket */
 	set(to: number) {
 		this.value = zero(to);
 		this.lastUpdate = tick();
@@ -68,7 +75,7 @@ export class Bucket {
 	/** Attempt to fill the bucket with `amount`, returns success */
 	tryFill(amount = 1) {
 		if (!this.canFill(amount)) return false;
-		this.value += amount; // canFill already updated the value
+		this.value = zero(this.value + amount); // canFill already updated the value
 		return true;
 	}
 
@@ -103,8 +110,9 @@ export class Bucket {
 		return this.timeUntilValueIs(0);
 	}
 
-	/** Calculate the drainRate to drain `amount` in `seconds` */
-	static calculateRate(amount: number, seconds: number) {
-		return amount / seconds;
+	/** Create a bucket for HttpService, with an optional `bandwidth` percentage and `maxRequestsPerMinute` */
+	static HttpService(bandwidth = 1, maxRequestsPerMinute = 500) {
+		const ratedLimit = bandwidth * maxRequestsPerMinute;
+		return new Bucket(ratedLimit, calculateRate(ratedLimit, 60));
 	}
 }
