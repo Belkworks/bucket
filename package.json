@@ -5,7 +5,8 @@
 	"scripts": {
 		"build": "rbxtsc",
 		"watch": "rbxtsc -w",
-		"prepublishOnly": "pnpm run build"
+		"prepublishOnly": "pnpm run build",
+		"document": "pnpm typedoc"
 	},
 	"author": "safazi",
 	"license": "MIT",
@@ -28,6 +29,7 @@
 		"eslint-plugin-roblox-ts": "^0.0.35",
 		"prettier": "^3.0.1",
 		"roblox-ts": "^2.1.1",
+		"typedoc": "^0.24.8",
 		"typescript": "^5.1.6"
 	}
 }
